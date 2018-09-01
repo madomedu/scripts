@@ -1,0 +1,60 @@
+#!/usr/bin/bash
+
+########################################################################################
+#                                                                                      #
+# Find duplicate lines in multiple files                                               #
+#                                                                                      #
+# Usage: fd [file1] [file2] ...                                                        #
+#                                                                                      #
+# May update later to show which file the duplicates are from                          #
+# May also try to make it faster as O(n^2) is pretty slow when comparing many entries  #
+# Flags too.                                                                           # 
+# Who knows, though                                                                    #
+#                                                                                      #
+########################################################################################
+
+if [ $# -lt 2 ]; then
+	>&2 echo "Illegal number of parameters. Minimum: 2"
+	return 1
+fi
+
+for file in "$@"
+do
+	if [ ! -f "$file" ]; then
+		>&2 echo "$file is not a file"
+		return 2
+	fi
+done
+
+
+
+declare -a arr=()
+declare -a dupes=()
+
+for file in "$@"
+do
+	while read -r line
+	do
+		foundDupe=
+		
+		 for a in "${arr[@]}"
+		 do
+		 	if [ "$a" == "$line" ]; then
+		 		foundDupe=1
+		 	fi
+		 done
+
+		if [ $foundDupe ]; then
+			dupes+=("$line")
+		else
+			arr+=("$line")
+		fi
+	done < "$file"
+done
+
+for i in "${dupes[@]}"
+do
+	echo "$i"
+done
+
+return 0
